@@ -75,6 +75,8 @@ canvas {
   width: 100vw;
   height: 100vh;
   position: relative;
+  flex: 0 0 100vw;
+  overflow: hidden;
 }
 
 .hero-screen {

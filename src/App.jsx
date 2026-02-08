@@ -701,7 +701,7 @@ function KeepScroll() {
   );
 }
 
-function VideoThumb({ src, poster, className, onOpen, span = 24 }) {
+function VideoThumb({ src, previewSrc, poster, className, onOpen, span = 24 }) {
   const videoRef = useRef(null);
 
   const handleEnter = () => {
@@ -724,11 +724,13 @@ function VideoThumb({ src, poster, className, onOpen, span = 24 }) {
       className={`video-tile elastic-ui clickable ${className}`}
       type="button"
       onClick={() => onOpen(src)}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
+      onMouseEnter={previewSrc ? handleEnter : undefined}
+      onMouseLeave={previewSrc ? handleLeave : undefined}
       style={{ backgroundImage: `url(${poster})`, gridRowEnd: `span ${span}` }}
     >
-      <video ref={videoRef} src={src} muted loop playsInline preload="metadata" poster={poster} />
+      {previewSrc && (
+        <video ref={videoRef} src={previewSrc} muted loop playsInline preload="metadata" poster={poster} />
+      )}
     </button>
   );
 }
@@ -738,7 +740,7 @@ export default function App() {
   const targetRef = useRef(0);
   const progressRef = useRef(0);
   const [showReelOpen, setShowReelOpen] = useState(false);
-  const [activeVideo, setActiveVideo] = useState("/videos/showreel.mp4");
+  const [activeVideo, setActiveVideo] = useState({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
 
   useEffect(() => {
     const onWheel = (e) => {
@@ -960,7 +962,7 @@ export default function App() {
             <button
               className="showreel-hero elastic-ui clickable"
               onClick={() => {
-                setActiveVideo("/videos/showreel.mp4");
+                setActiveVideo({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
                 setShowReelOpen(true);
               }}
               type="button"
@@ -1009,39 +1011,26 @@ export default function App() {
         <section className="screen gallery-screen">
           <div className="video-layout gallery-grid">
             {[
-              { poster: "/images/11.png", span: 30 },
-              { poster: "/images/2.png", span: 22 },
-              { poster: "/images/2.jpg", span: 26 },
-              { poster: "/images/4.jpg", span: 34 },
-              { poster: "/images/6.png", span: 20 },
-              { poster: "/images/7.png", span: 28 },
-              { poster: "/images/8.png", span: 18 },
-              { poster: "/images/9.png", span: 24 },
-              { poster: "/images/10.png", span: 32 },
-              { poster: "/images/3.jpg", span: 20 },
-              { poster: "/images/16.png", span: 26 },
-              { poster: "/images/15.png", span: 30 },
-            ].map((item, index) => (
+              { poster: "/images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
+              { poster: "/images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
+              { poster: "/images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
+              { poster: "/images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
+              { poster: "/images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
+              { poster: "/images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
+              { poster: "/images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
+              { poster: "/images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
+              { poster: "/images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
+              { poster: "/images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
+              { poster: "/images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
+              { poster: "/images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
+            ].map((item) => (
               <VideoThumb
                 key={item.poster}
                 poster={item.poster}
                 span={item.span}
-                src={[
-                  "/videos/whoiskartik.mov",
-                  "/videos/burntfilm.mov",
-                  "/videos/cyprus-we're the people.mp4",
-                  "/videos/pipsweddingreel1.mov",
-                  "/videos/pahadonmain.mov",
-                  "/videos/slice of maspalomas.mov",
-                  "/videos/slice of newyork.mov",
-                  "/videos/upsidedown1-motion.mov",
-                  "/videos/artofnoticining.mov",
-                  "/videos/travel life 3.mov",
-                  "/videos/likeastar.mov",
-                  "/videos/worldspinning.mp4",
-                ][index % 12]}
+                src={item.url}
                 onOpen={(src) => {
-                  setActiveVideo(src);
+                  setActiveVideo({ type: "youtube", url: src });
                   setShowReelOpen(true);
                 }}
               />
@@ -1076,13 +1065,23 @@ export default function App() {
             >
               ✕
             </button>
-            <video
-              className="reel-video"
-              src={activeVideo}
-              controls
-              autoPlay
-              playsInline
-            />
+            {activeVideo?.type === "youtube" ? (
+              <iframe
+                className="reel-video"
+                src={`https://www.youtube.com/embed/${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}?autoplay=1&playsinline=1`}
+                title="Video"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                className="reel-video"
+                src={activeVideo?.url}
+                controls
+                autoPlay
+                playsInline
+              />
+            )}
           </div>
         </div>
       )}
