@@ -743,8 +743,15 @@ export default function App() {
   const progressRef = useRef(0);
   const [showReelOpen, setShowReelOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setShowMobileNotice(window.innerWidth <= 900);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
     const onWheel = (e) => {
       e.preventDefault();
       const delta = e.deltaY * 0.0025;
@@ -941,7 +948,7 @@ export default function App() {
           <div className="stacked-card">
             <div className="screen-card elastic-ui">
               <h2>Inria</h2>
-              <p>Research Intern</p>
+              <p>Research Intern, Sophia Antipolis, France</p>
               <ul>
                 <li>Built computer vision models for Alzheimer’s patient activity recognition using kinetic sensor data.</li>
                 <li>Focused on sequence modeling and sensor fusion for real-world activity detection.</li>
@@ -1014,18 +1021,18 @@ export default function App() {
         <section className="screen gallery-screen">
           <div className="video-layout gallery-grid">
             {[
-              { poster: "images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
-              { poster: "images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
-              { poster: "images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
-              { poster: "images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
-              { poster: "images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
-              { poster: "images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
-              { poster: "images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
-              { poster: "images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
-              { poster: "images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
-              { poster: "images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
-              { poster: "images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
-              { poster: "images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
+              { poster: "/images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
+              { poster: "/images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
+              { poster: "/images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
+              { poster: "/images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
+              { poster: "/images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
+              { poster: "/images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
+              { poster: "/images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
+              { poster: "/images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
+              { poster: "/images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
+              { poster: "/images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
+              { poster: "/images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
+              { poster: "/images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
             ].map((item) => (
               <VideoThumb
                 key={item.poster}
