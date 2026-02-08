@@ -13,6 +13,7 @@ const SECTIONS = [
   "inria-pec",
   "keep",
   "creative",
+  "philosophy",
   "gallery",
   "contact",
 ];
@@ -355,8 +356,9 @@ function Scene({ progressRef }) {
   const inriaOffset = SECTION_SPACING * 5;
   const keepOffset = SECTION_SPACING * 6;
   const creativeOffset = SECTION_SPACING * 7;
-  const galleryOffset = SECTION_SPACING * 8;
-  const contactOffset = SECTION_SPACING * 9;
+  const philosophyOffset = SECTION_SPACING * 8;
+  const galleryOffset = SECTION_SPACING * 9;
+  const contactOffset = SECTION_SPACING * 10;
 
   const extraCircles = [
     { position: [competenciesOffset + 4.0, 2.2, 0], radius: 2.0, color: "#9bb8c9" },
@@ -795,6 +797,7 @@ export default function App() {
         <section className="screen simple-screen" />
         <section className="screen keep-screen" />
         <section className="screen creative-screen" />
+        <section className="screen simple-screen" />
         <section className="screen gallery-screen" />
         <section className="screen contact-screen" />
       </div>
@@ -1011,18 +1014,18 @@ export default function App() {
         <section className="screen gallery-screen">
           <div className="video-layout gallery-grid">
             {[
-              { poster: "/images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
-              { poster: "/images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
-              { poster: "/images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
-              { poster: "/images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
-              { poster: "/images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
-              { poster: "/images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
-              { poster: "/images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
-              { poster: "/images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
-              { poster: "/images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
-              { poster: "/images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
-              { poster: "/images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
-              { poster: "/images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
+              { poster: "images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
+              { poster: "images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
+              { poster: "images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
+              { poster: "images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
+              { poster: "images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
+              { poster: "images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
+              { poster: "images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
+              { poster: "images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
+              { poster: "images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
+              { poster: "images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
+              { poster: "images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
+              { poster: "images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
             ].map((item) => (
               <VideoThumb
                 key={item.poster}
