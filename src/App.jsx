@@ -1078,7 +1078,7 @@ export default function App() {
             {activeVideo?.type === "youtube" ? (
               <iframe
                 className="reel-video"
-                src={`https://www.youtube.com/embed/${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}?autoplay=1&playsinline=1`}
+                src={`https://www.youtube.com/embed/${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}?autoplay=1&playsinline=1&loop=1&playlist=${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}`}
                 title="Video"
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen

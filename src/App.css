@@ -366,6 +366,9 @@ canvas {
   justify-items: center;
   margin: 0 auto;
 }
+.gallery-screen .video-layout {
+  transform: translateY(95px) scale(0.9);;
+}
 
 .gallery-grid {
   grid-auto-rows: 8px;
