@@ -1049,18 +1049,32 @@ export default function App() {
         </section>
 
         <section className="screen contact-screen">
-          <div className="screen-card elastic-ui clickable">
-            <h2>Contact</h2>
-            <p>
-              <a href="mailto:ajrot.kartik@gmail.com">ajrot.kartik@gmail.com</a>
-            </p>
-            <span className="clickable">
-              <a href="https://www.linkedin.com/in/kartikajrot/" target="_blank" rel="noreferrer">LinkedIn</a>
-              {" · "}
-              <a href="https://www.instagram.com/kartikajrot/" target="_blank" rel="noreferrer">Instagram</a>
-              {" · "}
-              <a href="https://medium.com/@kartikajrot" target="_blank" rel="noreferrer">Medium</a>
-            </span>
+          <div className="contact-stack">
+            <div className="screen-card elastic-ui clickable">
+              <h2>Contact</h2>
+              <p>
+                <a href="mailto:ajrot.kartik@gmail.com">ajrot.kartik@gmail.com</a>
+              </p>
+              <span className="clickable">
+                <a href="https://www.linkedin.com/in/kartikajrot/" target="_blank" rel="noreferrer">LinkedIn</a>
+                {" · "}
+                <a href="https://www.instagram.com/kartikajrot/" target="_blank" rel="noreferrer">Instagram</a>
+                {" · "}
+                <a href="https://medium.com/@kartikajrot" target="_blank" rel="noreferrer">Medium</a>
+              </span>
+            </div>
+            <button
+              className="calendar-button clickable"
+              type="button"
+              onClick={() => {
+                window.open(
+                  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true",
+                  "_blank"
+                );
+              }}
+            >
+              Book an appointment
+            </button>
           </div>
         </section>
       </div>
@@ -1095,6 +1109,7 @@ export default function App() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
