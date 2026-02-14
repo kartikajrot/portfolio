@@ -7,17 +7,25 @@ const SECTION_SPACING = 12;
 const SECTIONS = [
   "hero",
   "devops",
-  "competencies",
-  "akelius",
+  "competencies-akelius",
   "amadeus",
   "inria-pec",
+  "services",
   "keep",
   "creative",
   "philosophy",
   "gallery",
-  "contact",
+  "aerial",
 ];
-const MAX_SECTIONS = SECTIONS.length - 1;
+const SCREEN_WIDTH = 100;
+const TIGHT_FOREGROUND_COUNT = 3; // services, keep, creative
+const TIGHT_BACKGROUND_COUNT = 2; // gallery, aerial
+const TIGHT_AMOUNT = 20;
+const TOTAL_FOREGROUND_WIDTH =
+  SECTIONS.length * SCREEN_WIDTH - TIGHT_FOREGROUND_COUNT * TIGHT_AMOUNT;
+const TOTAL_BACKGROUND_WIDTH =
+  SECTIONS.length * SCREEN_WIDTH - TIGHT_BACKGROUND_COUNT * TIGHT_AMOUNT;
+const MAX_SECTIONS = TOTAL_FOREGROUND_WIDTH / SCREEN_WIDTH - 1;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -350,25 +358,31 @@ function Scene({ progressRef }) {
     { position: [devopsOffset + 5.6, -1.2, 0], radius: 0.45, color: "#111" },
   ];
 
-  const competenciesOffset = SECTION_SPACING * 2;
-  const akeliusOffset = SECTION_SPACING * 3;
-  const amadeusOffset = SECTION_SPACING * 4;
-  const inriaOffset = SECTION_SPACING * 5;
+  const comboOffset = SECTION_SPACING * 2;
+  const amadeusOffset = SECTION_SPACING * 3;
+  const inriaOffset = SECTION_SPACING * 4;
+  const servicesOffset = SECTION_SPACING * 5;
   const keepOffset = SECTION_SPACING * 6;
   const creativeOffset = SECTION_SPACING * 7;
   const philosophyOffset = SECTION_SPACING * 8;
   const galleryOffset = SECTION_SPACING * 9;
-  const contactOffset = SECTION_SPACING * 10;
+  const aerialOffset = SECTION_SPACING * 9;
 
   const extraCircles = [
-    { position: [competenciesOffset + 4.0, 2.2, 0], radius: 2.0, color: "#9bb8c9" },
-    { position: [akeliusOffset + 4.5, 2.2, 0], radius: 2.1, color: "#111" },
+    { position: [comboOffset + 7.0, 4.2, 0], radius: 2.0, color: "#9bb8c9" },
+    { position: [comboOffset + 7.8, -2.4, 0], radius: 1.8, color: "#111" },
     { position: [amadeusOffset + 6.8, -2.4, 0], radius: 1.8, color: "#ff3c16" },
     { position: [amadeusOffset + 4.2, 2.6, 0], radius: 2.2, color: "#ffa726" },
-    { position: [inriaOffset + 8.8, 2.4, 0], radius: 2.6, color: "#9bb8c9" },
-    { position: [contactOffset + 3.2, 2.2, 0], radius: 2.4, color: "#111" },
-    { position: [contactOffset + 7.8, -2.6, 0], radius: 1.6, color: "#ff3c16" },
-    { position: [creativeOffset + 7.2, 2.8, 0], radius: 2.8, color: "#ff3c16" },
+    { position: [inriaOffset + 4.8, 2.4, 0], radius: 2.6, color: "#c661d5" },
+    { position: [servicesOffset + 2.2, 3.8, 0], radius: 2.4, color: "#6da3c2" },
+    // { position: [servicesOffset + 6.2, -2.2, 0], radius: 2.2, color: "#111" },
+    // { position: [servicesOffset + 9.8, 1.6, 0], radius: 1.6, color: "#ff3c16" },
+    { position: [servicesOffset + 0.8, -2.4, 0], radius: 1.0, color: "#ffa726" },
+    { position: [servicesOffset + 7.1, -4.2, 0], radius: 2.2, color: "#9b59b6" },
+    { position: [aerialOffset + 4.8, 2.6, 0], radius: 2.2, color: "#ff3c16" },
+    { position: [aerialOffset + 1.6, -2.6, 0], radius: 1.8, color: "#ffa726" },
+    { position: [aerialOffset + 8.4, -1.6, 0], radius: 1.4, color: "#9bb8c9" },
+    { position: [creativeOffset + 6.2, 2.8, 0], radius: 2.8, color: "#ff3c16" },
   ];
 
   const allColliders = [
@@ -406,24 +420,24 @@ function Scene({ progressRef }) {
         />
       ))}
 
-      <WobbleShape position={[amadeusOffset + 2.6, 2.2, 0]}>
-        <mesh rotation={[0, 0, 0.5]}>
-          <planeGeometry args={[1.6, 1.6]} />
-          <meshBasicMaterial color="#e9a7c8" />
-        </mesh>
-      </WobbleShape>
-
-      <WobbleShape position={[amadeusOffset + 7.2, -0.6, 0]}>
-        <mesh rotation={[0, 0, -0.2]}>
-          <planeGeometry args={[1.2, 1.2]} />
-          <meshBasicMaterial color="#9bb8c9" />
-        </mesh>
-      </WobbleShape>
-
       <WobbleShape position={[amadeusOffset + 9.6, 2.6, 0]}>
         <mesh rotation={[0, 0, 0.8]}>
           <coneGeometry args={[1.6, 1.8, 3]} />
           <meshBasicMaterial color="#ff3c16" />
+        </mesh>
+      </WobbleShape>
+
+      <WobbleShape position={[keepOffset + 2.6, -2.8, 0]}>
+        <mesh rotation={[0, 0, 0.35]}>
+          <planeGeometry args={[2.6, 2.6]} />
+          <meshBasicMaterial color="#9bb8c9" />
+        </mesh>
+      </WobbleShape>
+
+      <WobbleShape position={[keepOffset + 4.8, 3.2, 0]}>
+        <mesh rotation={[0, 0, -0.45]}>
+          <coneGeometry args={[2.6, 2.8, 3]} />
+          <meshBasicMaterial color="#e9a7c8" />
         </mesh>
       </WobbleShape>
 
@@ -521,6 +535,7 @@ function KeepScroll() {
   const spawnTimer = useRef(0);
   const frameRef = useRef(0);
   const rafRef = useRef(null);
+  const mouseRef = useRef({ x: 0, y: 0, active: false });
   
 
   useEffect(() => {
@@ -544,6 +559,20 @@ function KeepScroll() {
 
     resize();
     window.addEventListener("resize", resize);
+
+    const onMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current.x = e.clientX - rect.left;
+      mouseRef.current.y = e.clientY - rect.top;
+      mouseRef.current.active = true;
+    };
+
+    const onLeave = () => {
+      mouseRef.current.active = false;
+    };
+
+    canvas.addEventListener("mousemove", onMove);
+    canvas.addEventListener("mouseleave", onLeave);
 
     const colors = ["#ff3c16", "#ffa726", "#8a4bdb", "#f4b1ff", "#9bb8c9"];
     const centerX = () => width / 2;
@@ -612,6 +641,19 @@ function KeepScroll() {
         p.vy += 0.4;
         p.wobble += 0.04;
         p.vx += Math.sin(p.wobble) * 0.02;
+
+        if (mouseRef.current.active) {
+          const mx = mouseRef.current.x;
+          const my = mouseRef.current.y;
+          const mdx = p.x - mx;
+          const mdy = p.y - my;
+          const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+          if (mDist < 90) {
+            const strength = (1 - mDist / 90) * 1.6;
+            p.vx += (mdx / (mDist || 1)) * strength;
+            p.vy += (mdy / (mDist || 1)) * strength;
+          }
+        }
 
         p.x += p.vx;
         p.y += p.vy;
@@ -692,6 +734,8 @@ function KeepScroll() {
 
     return () => {
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", onMove);
+      canvas.removeEventListener("mouseleave", onLeave);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
@@ -787,26 +831,29 @@ export default function App() {
     };
   }, []);
 
+  const tightForegroundCount = TIGHT_FOREGROUND_COUNT;
+  const tightBackgroundCount = TIGHT_BACKGROUND_COUNT;
+
   return (
     <div className="world">
       <div
         className="world-track background-track"
         style={{
           transform: `translateX(${-progress * 100}vw)`,
-          width: `${SECTIONS.length * 100}vw`,
+          width: `${TOTAL_BACKGROUND_WIDTH}vw`,
         }}
       >
         <section className="screen hero-screen" />
         <section className="screen devops-screen" />
-        <section className="screen competencies-screen" />
         <section className="screen simple-screen" />
         <section className="screen simple-screen" />
         <section className="screen simple-screen" />
+        <section className="screen services-screen" />
         <section className="screen keep-screen" />
         <section className="screen creative-screen" />
         <section className="screen simple-screen" />
-        <section className="screen gallery-screen" />
-        <section className="screen contact-screen" />
+        <section className="screen gallery-screen screen-tight" />
+        <section className="screen services-screen screen-tight" />
       </div>
 
       <Canvas camera={{ position: [0, 0, 10], fov: 50 }} gl={{ antialias: true }}>
@@ -817,7 +864,7 @@ export default function App() {
         className="world-track foreground-track"
         style={{
           transform: `translateX(${-progress * 100}vw)`,
-          width: `${SECTIONS.length * 100}vw`,
+          width: `${TOTAL_FOREGROUND_WIDTH}vw`,
         }}
       >
         <section className="screen hero-screen">
@@ -835,7 +882,7 @@ export default function App() {
             <span>Work , About</span>
           </div>
 
-          <div className="hero-next">→</div>
+          
         </section>
 
         <section className="screen devops-screen">
@@ -855,10 +902,10 @@ export default function App() {
               Expert in Kubernetes at scale, GitOps automation, and security-first architecture.
             </div>
           </div>
-          <div className="devops-next">→</div>
+          
         </section>
 
-        <section className="screen competencies-screen">
+        <section className="screen simple-screen combo-screen">
           <div className="screen-card elastic-ui competencies-card">
             <h2>Core Competencies</h2>
             <div className="competency-grid">
@@ -884,27 +931,24 @@ export default function App() {
               </div>
             </div>
           </div>
-        </section>
 
-        <section className="screen simple-screen">
-          <div className="screen-card elastic-ui dense-card">
+          <div className="screen-card elastic-ui dense-card akelius-card">
             <h2>Akelius</h2>
             <p>Senior DevOps Engineer</p>
             <p className="date-line">October 2021 - Present · Berlin, Germany</p>
             <div className="dense-block">
               <h3>Strategic Platform & Infrastructure Leadership</h3>
               <ul>
-                <li>Led Kubernetes platform strategy across 22 production clusters (AKS/EKS), supporting 40+ engineers and 5 product teams; reduced onboarding from 2 weeks to 2 days while sustaining 99.9% uptime for 100K+ users across 4 countries.</li>
-                <li>Drove cloud consolidation strategy (AWS vs Azure), presenting executive business case and leading migration that cut annual infrastructure costs by 39% with zero business disruption.</li>
-                <li>Architected multi-cloud infrastructure with Terraform, defining VPCs/VPNs/routing, IAM governance, and security posture standardized across AWS and Azure.</li>
-                <li>Owned AI/HPC infra roadmap with GPU-backed Kubernetes and SLURM (AWS ParallelCluster), enabling analytics for 20K+ units and new AI-driven capabilities.</li>
+                <li>Managed Kubernetes platform infrastructure across production clusters (AKS/EKS) including upgrades and tooling, supporting 60+ engineers; sustained 99.9% uptime for 100K+ users across 4 countries.</li>
+                <li>Consolidated cloud footprint (AWS vs Azure), executing migration that reduced annual infrastructure costs by 39% with zero business disruption.</li>
+                <li>Built multi-cloud foundations with Terraform: VPCs/VPNs/routing, IAM governance, and security baselines standardized across AWS and Azure.</li>
               </ul>
             </div>
             <div className="dense-block">
               <h3>Observability & Platform Engineering Excellence</h3>
               <ul>
                 <li>Established observability model with Prometheus, Grafana, Datadog, and ELK; defined SLIs/SLOs/SLAs and reduced MTTR by 45% via standardized incident response.</li>
-                <li>Led GitOps adoption (FluxCD vs ArgoCD) across 22 clusters, delivering 60% faster releases and self-service deployments for 60+ engineers.</li>
+                <li>Led GitOps adoption (FluxCD ) across clusters, delivering 60% faster releases and self-service deployments for 60+ engineers.</li>
                 <li>Standardized CI/CD into a centralized Jenkins platform with self-hosted runners and Mac nodes; integrated Snyk and SonarQube for safer deployments across 8+ teams.</li>
               </ul>
             </div>
@@ -913,7 +957,6 @@ export default function App() {
               <ul>
                 <li>Implemented Kyverno policy-as-code guardrails, reducing security incidents by 60% while speeding compliant delivery.</li>
                 <li>Led identity platform evaluation (Auth0, Microsoft Entra, Keycloak), shaping company-wide identity architecture and zero-trust adoption.</li>
-                <li>Built a FinOps operating model with multi-cloud cost attribution (AWS, Azure, MongoDB Cloud) enabling chargeback for 8+ teams and sustained cost-aware decisions.</li>
                 <li>Owned on-call and incident response strategy; mentored engineers on Kubernetes ops, reliability, and cloud cost awareness to raise platform maturity.</li>
               </ul>
             </div>
@@ -962,11 +1005,74 @@ export default function App() {
           </div>
         </section>
 
-        <section className="screen keep-screen">
+        <section className="screen services-screen screen-tight">
+          <div className="services-wrap">
+            <div className="services-title-wrap">
+              <WiggleTitle textLines={["Cloud & Platform"]} overlap className="services-title services-title--split" />
+              <WiggleTitle textLines={["Services"]} overlap className="services-title services-title--split" />
+              
+            </div>
+            <p>Infrastructure-agnostic · AWS · Azure · GCP</p>
+            <div className="services-cards-wrap">
+              <div className="services-grid services-grid--stagger">
+                <div className="service-card">
+                  <span className="service-pill">FOUNDATION</span>
+                  <h3>Zero to Production</h3>
+                  <p>For startups and teams starting from scratch — production-ready infra without hiring a full platform team.</p>
+                  <ul>
+                    <li>Cloud architecture design & setup</li>
+                    <li>Kubernetes cluster provisioning</li>
+                    <li>CI/CD pipeline configuration</li>
+                    <li>Infrastructure-as-Code (Terraform/Pulumi)</li>
+                    <li>Basic observability — monitoring, logging, alerting</li>
+                    <li>Security baseline & access management</li>
+                    <li>AI infra — HPC, AWS ParallelCluster, KubeRay, batch schedulers, Kubeflow</li>
+                  </ul>
+                </div>
+                <div className="service-card service-card--highlight">
+                  <span className="service-pill">GROWTH</span>
+                  <h3>Optimize & Scale</h3>
+                  <p>Already running in the cloud but it’s messy, expensive, or fragile? I’ll audit, fix, and future-proof.</p>
+                  <ul>
+                    <li>Infrastructure audit & health check</li>
+                    <li>Cloud cost optimization (FinOps)</li>
+                    <li>Cloud migration — AWS ↔ Azure ↔ GCP</li>
+                    <li>GitOps implementation (ArgoCD / Flux)</li>
+                    <li>Policy-as-Code governance (Kyverno / OPA)</li>
+                    <li>Advanced observability & incident response</li>
+                    <li>Multi-cluster & multi-cloud architecture</li>
+                  </ul>
+                </div>
+                <div className="service-card">
+                  <span className="service-pill">ADVISORY</span>
+                  <h3>Fractional Platform Engineer</h3>
+                  <p>Ongoing, retainer-based support — senior platform engineering without the full-time cost.</p>
+                  <ul>
+                    <li>Monthly architecture reviews</li>
+                    <li>On-call incident support & guidance</li>
+                    <li>Team mentoring & best practice workshops</li>
+                    <li>Vendor evaluation & tech stack decisions</li>
+                    <li>Strategic infrastructure roadmap planning</li>
+                  </ul>
+                </div>
+              </div>
+              <a
+                className="calendar-button clickable services-cta"
+                href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Let’s Talk →
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="screen keep-screen screen-tight">
           <KeepScroll />
         </section>
 
-        <section className="screen creative-screen">
+        <section className="screen creative-screen screen-tight">
           <div className="creative-block">
             <WiggleTitle textLines={["Creative", "Human"]} emphasis overlap className="creative-title" />
             <button
@@ -1048,35 +1154,57 @@ export default function App() {
           </div>
         </section>
 
-        <section className="screen contact-screen">
-          <div className="contact-stack">
-            <div className="screen-card elastic-ui clickable">
-              <h2>Contact</h2>
-              <p>
-                <a href="mailto:ajrot.kartik@gmail.com">ajrot.kartik@gmail.com</a>
-              </p>
-              <span className="clickable">
-                <a href="https://www.linkedin.com/in/kartikajrot/" target="_blank" rel="noreferrer">LinkedIn</a>
-                {" · "}
-                <a href="https://www.instagram.com/kartikajrot/" target="_blank" rel="noreferrer">Instagram</a>
-                {" · "}
-                <a href="https://medium.com/@kartikajrot" target="_blank" rel="noreferrer">Medium</a>
-              </span>
+        <section className="screen services-screen aerial-screen">
+          <div className="services-wrap">
+            <div className="services-title-wrap">
+              <WiggleTitle textLines={["Aerial & Creative"]} overlap className="services-title services-title--split" />
+              <WiggleTitle textLines={[ "Services"]} overlap className="services-title services-title--split" />
+              
             </div>
-            <button
-              className="calendar-button clickable"
-              type="button"
-              onClick={() => {
-                window.open(
-                  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true",
-                  "_blank"
-                );
-              }}
-            >
-              Book an appointment
-            </button>
+            <p>Drone cinematography · Training · Post-production</p>
+            <div className="services-grid services-grid--two services-grid--stagger">
+              <div className="service-card2 service-card--warm">
+                <span className="service-pill service-pill--warm">CINEMATOGRAPHY</span>
+                <h3>Aerial Videography</h3>
+                <p>Cinematic drone footage for productions, events, and properties — available for teams or direct bookings.</p>
+                <ul>
+                  <li>Wedding & event aerial coverage</li>
+                  <li>Real estate & property showcases</li>
+                  <li>Travel & landscape cinematography</li>
+                  <li>Post-production editing & color grading</li>
+                  <li>Collaboration with production teams</li>
+                </ul>
+              </div>
+              <div className="service-card2 service-card--warm">
+                <span className="service-pill service-pill--warm">TRAINING</span>
+                <h3>Learn to Fly & Edit</h3>
+                <p>One-on-one or small group sessions covering everything from first flight to pro-grade editing workflows.</p>
+                <ul>
+                  <li>Drone fundamentals & flight planning</li>
+                  <li>Camera settings & shot composition</li>
+                  <li>Video editing & post-production workflow</li>
+                  <li>Regulations & safety best practices</li>
+                  <li>Flexible format — hourly or workshop-based</li>
+                </ul>
+              </div>
+            </div>
+            <div className="contact-buttons">
+              <a
+                className="calendar-button clickable"
+                href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Book an appointment
+              </a>
+              <a className="calendar-button clickable" href="mailto:ajrot.kartik@gmail.com">Email</a>
+              <a className="calendar-button clickable" href="https://www.linkedin.com/in/kartikajrot/" target="_blank" rel="noreferrer">LinkedIn</a>
+              <a className="calendar-button clickable" href="https://www.instagram.com/kartikajrot/" target="_blank" rel="noreferrer">Instagram</a>
+              <a className="calendar-button clickable" href="https://medium.com/@kartikajrot" target="_blank" rel="noreferrer">Medium</a>
+            </div>
           </div>
         </section>
+
       </div>
 
       {showReelOpen && (
