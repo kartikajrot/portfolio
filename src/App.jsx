@@ -31,7 +31,13 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function ElasticCircle({ position, radius, segments = 64, color = "#111" }) {
+function ElasticCircle({
+  position,
+  radius,
+  segments = 64,
+  color = "#111",
+  pointerEnabled = true,
+}) {
   const meshRef = useRef();
   const originalPositions = useRef([]);
   const worldCenter = useRef(new THREE.Vector3());
@@ -44,6 +50,7 @@ function ElasticCircle({ position, radius, segments = 64, color = "#111" }) {
 
   useFrame(({ mouse, viewport }) => {
     if (!meshRef.current) return;
+    if (!pointerEnabled) return;
 
     const mx = (mouse.x * viewport.width) / 2;
     const my = (mouse.y * viewport.height) / 2;
@@ -110,7 +117,14 @@ function WobbleShape({ children, position, intensity = 0.18 }) {
   );
 }
 
-function ThickLine({ start, end, segments = 32, color = "white", thickness = 0.05 }) {
+function ThickLine({
+  start,
+  end,
+  segments = 32,
+  color = "white",
+  thickness = 0.05,
+  pointerEnabled = true,
+}) {
   const meshRef = useRef();
   const originalPositions = useRef([]);
   const mouse = useRef({ x: 0, y: 0 });
@@ -133,6 +147,7 @@ function ThickLine({ start, end, segments = 32, color = "white", thickness = 0.0
 
   useFrame(({ mouse: m, viewport }) => {
     if (!meshRef.current) return;
+    if (!pointerEnabled) return;
 
     mouse.current.x = (m.x * viewport.width) / 2;
     mouse.current.y = (m.y * viewport.height) / 2;
@@ -274,7 +289,7 @@ function ParticleSystem({ circles }) {
   );
 }
 
-function Scene({ progressRef }) {
+function Scene({ progressRef, pointerEnabled = true }) {
   const { viewport, size } = useThree();
   const worldRef = useRef();
   const frameRef = useRef(0);
@@ -341,12 +356,13 @@ function Scene({ progressRef }) {
   });
 
   const heroCircles = [
-    { position: [1.9, 1.4, 0], radius: 3.6 },
+    { position: [1.9, 1.4, 0], radius: 3.5 },
     { position: [8, -3, 0], radius: 2 },
     { position: [8.5, 3, 0], radius: 0.6 },
     { position: [-6, -4, 0], radius: 0.35 },
     { position: [-4, -2, 0], radius: 0.5 },
     { position: [6.8, 0, 0], radius: 0.65 },
+    { position: [-2.2, -2.4, 0], radius: 0.9 },
   ];
 
   const devopsOffset = SECTION_SPACING;
@@ -399,6 +415,7 @@ function Scene({ progressRef }) {
           position={circle.position}
           radius={circle.radius}
           color="#111"
+          pointerEnabled={pointerEnabled}
         />
       ))}
 
@@ -408,6 +425,7 @@ function Scene({ progressRef }) {
           position={circle.position}
           radius={circle.radius}
           color={circle.color}
+          pointerEnabled={pointerEnabled}
         />
       ))}
 
@@ -417,6 +435,7 @@ function Scene({ progressRef }) {
           position={circle.position}
           radius={circle.radius}
           color={circle.color}
+          pointerEnabled={pointerEnabled}
         />
       ))}
 
@@ -453,12 +472,14 @@ function Scene({ progressRef }) {
         end={linePositions.line1.end}
         color="white"
         thickness={0.07}
+        pointerEnabled={pointerEnabled}
       />
       <ThickLine
         start={linePositions.line2.start}
         end={linePositions.line2.end}
         color="white"
         thickness={0.07}
+        pointerEnabled={pointerEnabled}
       />
 
       <ParticleSystem circles={allColliders} />
@@ -526,7 +547,7 @@ function WiggleTitle({ textLines, emphasis = false, overlap = false, className =
   );
 }
 
-function KeepScroll() {
+function KeepScroll({ pointerEnabled = true }) {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
   const particlesRef = useRef([]);
@@ -561,6 +582,7 @@ function KeepScroll() {
     window.addEventListener("resize", resize);
 
     const onMove = (e) => {
+      if (!pointerEnabled) return;
       const rect = canvas.getBoundingClientRect();
       mouseRef.current.x = e.clientX - rect.left;
       mouseRef.current.y = e.clientY - rect.top;
@@ -571,8 +593,10 @@ function KeepScroll() {
       mouseRef.current.active = false;
     };
 
-    canvas.addEventListener("mousemove", onMove);
-    canvas.addEventListener("mouseleave", onLeave);
+    if (pointerEnabled) {
+      canvas.addEventListener("mousemove", onMove);
+      canvas.addEventListener("mouseleave", onLeave);
+    }
 
     const colors = ["#ff3c16", "#ffa726", "#8a4bdb", "#f4b1ff", "#9bb8c9"];
     const centerX = () => width / 2;
@@ -603,10 +627,11 @@ function KeepScroll() {
       const R = radius();
 
       const text = "Keep scroooooolling";
-      ctx.font = "62px Neue Machina, Space Grotesk, sans-serif";
+      const fontSize = Math.max(28, Math.min(62, width * 0.12));
+      ctx.font = `${fontSize}px Neue Machina, Space Grotesk, sans-serif`;
       const textMetrics = ctx.measureText(text);
       const textW = textMetrics.width;
-      const textH = 52;
+      const textH = fontSize * 0.9;
       const textX = cx - textW / 2;
       const textY = cy + textH / 2 + bounceRef.current;
       const textRect = {
@@ -708,7 +733,7 @@ function KeepScroll() {
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.font = "28px serif";
+        ctx.font = `${Math.max(20, fontSize * 0.45)}px serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#111";
@@ -787,23 +812,27 @@ export default function App() {
   const progressRef = useRef(0);
   const [showReelOpen, setShowReelOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
-  const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 900);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setShowMobileNotice(window.innerWidth <= 900);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 900);
     };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    window.addEventListener("resize", handleResize);
 
-    const onWheel = (e) => {
-      e.preventDefault();
-      const delta = e.deltaY * 0.0025;
-      targetRef.current = clamp(targetRef.current + delta, 0, MAX_SECTIONS);
+    return () => {
+      window.removeEventListener("resize", handleResize);
     };
+  }, []);
 
-    window.addEventListener("wheel", onWheel, { passive: false });
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    html.classList.toggle("is-mobile", isMobile);
+    body.classList.toggle("is-mobile", isMobile);
+  }, [isMobile]);
 
+  useEffect(() => {
     const onMove = (e) => {
       const mx = (e.clientX / window.innerWidth) * 2 - 1;
       const my = (e.clientY / window.innerHeight) * 2 - 1;
@@ -825,49 +854,39 @@ export default function App() {
     tick();
 
     return () => {
-      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("pointermove", onMove);
       cancelAnimationFrame(raf);
     };
   }, []);
 
+  useEffect(() => {
+    if (isMobile) {
+      const onScroll = () => {
+        const virtualProgress = window.scrollY / window.innerHeight;
+        targetRef.current = clamp(virtualProgress, 0, MAX_SECTIONS);
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+      return () => {
+        window.removeEventListener("scroll", onScroll);
+      };
+    }
+    const onWheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY * 0.0025;
+      targetRef.current = clamp(targetRef.current + delta, 0, MAX_SECTIONS);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, [isMobile]);
+
   const tightForegroundCount = TIGHT_FOREGROUND_COUNT;
   const tightBackgroundCount = TIGHT_BACKGROUND_COUNT;
 
-  return (
-    <div className="world">
-      <div
-        className="world-track background-track"
-        style={{
-          transform: `translateX(${-progress * 100}vw)`,
-          width: `${TOTAL_BACKGROUND_WIDTH}vw`,
-        }}
-      >
-        <section className="screen hero-screen" />
-        <section className="screen devops-screen" />
-        <section className="screen simple-screen" />
-        <section className="screen simple-screen" />
-        <section className="screen simple-screen" />
-        <section className="screen services-screen" />
-        <section className="screen keep-screen" />
-        <section className="screen creative-screen" />
-        <section className="screen simple-screen" />
-        <section className="screen gallery-screen screen-tight" />
-        <section className="screen services-screen screen-tight" />
-      </div>
-
-      <Canvas camera={{ position: [0, 0, 10], fov: 50 }} gl={{ antialias: true }}>
-        <Scene progressRef={progressRef} />
-      </Canvas>
-
-      <div
-        className="world-track foreground-track"
-        style={{
-          transform: `translateX(${-progress * 100}vw)`,
-          width: `${TOTAL_FOREGROUND_WIDTH}vw`,
-        }}
-      >
-        <section className="screen hero-screen">
+  const foregroundSections = (
+    <>
+      <section className="screen hero-screen">
           <div className="hero-text">
             <h1 id="kartik-text">KARTIK</h1>
             <h1 id="ajrot-text">AJROT</h1>
@@ -883,9 +902,9 @@ export default function App() {
           </div>
 
           
-        </section>
+      </section>
 
-        <section className="screen devops-screen">
+      <section className="screen devops-screen">
           <div className="devops-band">
             <div className="band-title">PROFESSIONAL EXPERIENCE</div>
             <div className="band-title">(and some Personal Bits)</div>
@@ -903,9 +922,9 @@ export default function App() {
             </div>
           </div>
           
-        </section>
+      </section>
 
-        <section className="screen simple-screen combo-screen">
+      <section className="screen simple-screen combo-screen">
           <div className="screen-card elastic-ui competencies-card">
             <h2>Core Competencies</h2>
             <div className="competency-grid">
@@ -1069,7 +1088,7 @@ export default function App() {
         </section>
 
         <section className="screen keep-screen screen-tight">
-          <KeepScroll />
+          <KeepScroll pointerEnabled={!isMobile} />
         </section>
 
         <section className="screen creative-screen screen-tight">
@@ -1204,40 +1223,311 @@ export default function App() {
             </div>
           </div>
         </section>
+    </>
+  );
 
-      </div>
+  const backgroundSections = (
+    <>
+      <section className="screen hero-screen" />
+      <section className="screen devops-screen" />
+      <section className="screen simple-screen" />
+      <section className="screen simple-screen" />
+      <section className="screen simple-screen" />
+      <section className="screen services-screen" />
+      <section className="screen keep-screen" />
+      <section className="screen creative-screen" />
+      <section className="screen simple-screen" />
+      <section className="screen gallery-screen screen-tight" />
+      <section className="screen services-screen screen-tight" />
+    </>
+  );
 
-      {showReelOpen && (
-        <div className="reel-modal" onClick={() => setShowReelOpen(false)}>
-          <div className="reel-card" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="reel-close"
-              type="button"
-              onClick={() => setShowReelOpen(false)}
-            >
-              ✕
-            </button>
-            {activeVideo?.type === "youtube" ? (
-              <iframe
-                className="reel-video"
-                src={`https://www.youtube.com/embed/${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}?autoplay=1&playsinline=1&loop=1&playlist=${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}`}
-                title="Video"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <video
-                className="reel-video"
-                src={activeVideo?.url}
-                controls
-                autoPlay
-                playsInline
-              />
-            )}
+  const mobileSections = (
+    <>
+      <section className="mobile-hero">
+        <div className="mobile-hero-particles" />
+        <div className="mobile-hero-text">
+          <h1>KARTIK</h1>
+          <h1>AJROT</h1>
+          <p>CREATIVE CLOUD ENGINEER<br />BASED IN BERLIN</p>
+        </div>
+        <div className="mobile-hero-footer">Work , About</div>
+      </section>
+
+      <section className="mobile-section mobile-devops">
+        <div className="mobile-title-stack mobile-title-stack--aligned">
+          <div className="mobile-title">Senior DevOps</div>
+          <div className="mobile-title mobile-title--offset">Engineer</div>
+        </div>
+        <p className="mobile-lede">
+          8+ years architecting cloud platforms, infrastructure strategy, and reliability. Expert in Kubernetes at scale,
+          GitOps automation, and security-first architecture.
+        </p>
+      </section>
+
+      <section className="mobile-section">
+        <div className="mobile-card">
+          <h2>Core Competencies</h2>
+          <p><strong>Cloud & Infrastructure:</strong> AWS, Azure, Terraform, DNS, Secrets, RBAC</p>
+          <p><strong>Containers & Platform:</strong> AKS/EKS, GitOps (FluxCD), Helm, Karpenter, KEDA, ParallelCluster</p>
+          <p><strong>CI/CD & Automation:</strong> Jenkins, GitLab CI, Azure DevOps, Python, Go</p>
+          <p><strong>Observability:</strong> Prometheus, Grafana, Datadog, ELK, Loki</p>
+          <p><strong>Security:</strong> Entra, OAuth/OIDC, Kyverno, Vault, Snyk, SonarQube</p>
+        </div>
+      </section>
+
+      <section className="mobile-section">
+        <div className="mobile-card">
+          <h2>Akelius · Senior DevOps Engineer</h2>
+          <p className="date-line">Oct 2021 – Present · Berlin</p>
+          <ul>
+            <li>Managed Kubernetes platforms across 22 AKS/EKS clusters for 40+ engineers.</li>
+            <li>Cut onboarding from 2 weeks to 2 days while sustaining 99.9% uptime.</li>
+            <li>Built infra with Terraform, multi-cloud networking, IAM, and security guardrails.</li>
+            <li>Led observability with Prometheus/Grafana/Datadog; reduced MTTR by 45%.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="mobile-section">
+        <div className="mobile-card">
+          <h2>Amadeus · Senior Software Engineer (DevOps)</h2>
+          <p className="date-line">Apr 2020 – Sep 2021 · Bangalore</p>
+          <ul>
+            <li>Migrated Java systems to OpenShift for resilience.</li>
+            <li>Built a managed Apache platform using Kubernetes Operators.</li>
+          </ul>
+        </div>
+        <div className="mobile-card">
+          <h2>Amadeus · Software Engineer</h2>
+          <p className="date-line">Jan 2018 – Mar 2020 · Bangalore</p>
+          <ul>
+            <li>Backend services and automation in Python and Java.</li>
+            <li>Upgraded Apache/JBOSS to meet PCI-DSS.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="mobile-section">
+        <div className="mobile-card">
+          <h2>Inria · Research Intern</h2>
+          <p>Computer vision for Alzheimer’s activity recognition using kinetic sensors.</p>
+        </div>
+        <div className="mobile-card">
+          <h2>PEC University</h2>
+          <p>B.Tech Electronics & Communication · CGPA 8.14 · Chandigarh</p>
+        </div>
+      </section>
+
+      <section className="mobile-section mobile-services">
+        <div className="mobile-title-stack mobile-title-stack--aligned">
+          <div className="mobile-title">Cloud & Platform</div>
+          <div className="mobile-title mobile-title--offset">Services</div>
+        </div>
+        <p className="mobile-lede">Infrastructure-agnostic · AWS · Azure · GCP</p>
+        <div className="mobile-services-cards">
+          <div className="mobile-card">
+            <span className="service-pill">FOUNDATION</span>
+            <h3>Zero to Production</h3>
+            <ul>
+              <li>Cloud architecture design & setup</li>
+              <li>Kubernetes cluster provisioning</li>
+              <li>CI/CD pipeline configuration</li>
+              <li>Infrastructure-as-Code (Terraform/Pulumi)</li>
+              <li>Security baseline & access management</li>
+              <li>AI infra — HPC, ParallelCluster, KubeRay, Kubeflow</li>
+            </ul>
+          </div>
+          <div className="mobile-card">
+            <span className="service-pill">GROWTH</span>
+            <h3>Optimize & Scale</h3>
+            <ul>
+              <li>Infrastructure audit & health check</li>
+              <li>Cloud cost optimization (FinOps)</li>
+              <li>GitOps implementation (ArgoCD/Flux)</li>
+              <li>Policy-as-Code governance (Kyverno/OPA)</li>
+              <li>Advanced observability & incident response</li>
+              <li>Multi-cluster & multi-cloud architecture</li>
+            </ul>
+          </div>
+          <div className="mobile-card">
+            <span className="service-pill">ADVISORY</span>
+            <h3>Fractional Platform Engineer</h3>
+            <ul>
+              <li>Monthly architecture reviews</li>
+              <li>On-call incident support & guidance</li>
+              <li>Team mentoring & best practice workshops</li>
+              <li>Vendor evaluation & tech stack decisions</li>
+              <li>Strategic infrastructure roadmap planning</li>
+            </ul>
           </div>
         </div>
-      )}
+        <a
+          className="calendar-button clickable services-cta"
+          href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Let’s Talk →
+        </a>
+      </section>
 
+      <section className="mobile-section mobile-creative">
+        <div className="mobile-title-stack mobile-title-stack--aligned">
+          <div className="mobile-title">Creative</div>
+          <div className="mobile-title mobile-title--offset">Human</div>
+        </div>
+        <button
+          className="showreel-hero elastic-ui clickable"
+          onClick={() => {
+            setActiveVideo({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
+            setShowReelOpen(true);
+          }}
+          type="button"
+        >
+          <span className="play-icon">▶</span>
+          Showreel
+        </button>
+      </section>
+
+      <section className="mobile-section mobile-gallery">
+        <div className="mobile-carousel" role="list">
+          {[
+            { poster: "/images/11.png", url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
+            { poster: "/images/2.png", url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
+            { poster: "/images/2.jpg", url: "https://youtu.be/ajGh1sRdnwo" },
+            { poster: "/images/4.jpg", url: "https://youtu.be/PfGdJA2TgmQ" },
+            { poster: "/images/6.png", url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
+            { poster: "/images/7.png", url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
+            { poster: "/images/8.png", url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
+            { poster: "/images/9.png", url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
+            { poster: "/images/10.png", url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
+            { poster: "/images/3.jpg", url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
+            { poster: "/images/16.png", url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
+            { poster: "/images/15.png", url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
+          ].map((item) => (
+            <button
+              key={item.poster}
+              className="mobile-carousel-item clickable"
+              type="button"
+              onClick={() => {
+                setActiveVideo({ type: "youtube", url: item.url });
+                setShowReelOpen(true);
+              }}
+              style={{ backgroundImage: `url(${item.poster})` }}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="mobile-section mobile-aerial">
+        <div className="mobile-title-stack mobile-title-stack--aligned">
+          <div className="mobile-title">Aerial & Creative</div>
+          <div className="mobile-title mobile-title--offset">Services</div>
+        </div>
+        <p className="mobile-lede">Drone cinematography · Training · Post-production</p>
+        <div className="mobile-card">
+          <span className="service-pill service-pill--warm">CINEMATOGRAPHY</span>
+          <h3>Aerial Videography</h3>
+          <p>Wedding/events, real estate, travel, landscape cinematography, and post-production.</p>
+        </div>
+        <div className="mobile-card">
+          <span className="service-pill service-pill--warm">TRAINING</span>
+          <h3>Learn to Fly & Edit</h3>
+          <p>1:1 or small group training for flight, camera settings, and editing workflows.</p>
+        </div>
+        <div className="contact-buttons">
+          <a
+            className="calendar-button clickable"
+            href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0v3H2ea4kuYqntwftlNjDElberk-FqcbHpwX9ArmLpz6L-L1Iy6pPqO6x76CQMibkka59bTkIE?gv=true"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Book an appointment
+          </a>
+          <a className="calendar-button clickable" href="mailto:ajrot.kartik@gmail.com">Email</a>
+          <a className="calendar-button clickable" href="https://www.linkedin.com/in/kartikajrot/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a className="calendar-button clickable" href="https://www.instagram.com/kartikajrot/" target="_blank" rel="noreferrer">Instagram</a>
+          <a className="calendar-button clickable" href="https://medium.com/@kartikajrot" target="_blank" rel="noreferrer">Medium</a>
+        </div>
+      </section>
+    </>
+  );
+
+  const modal = showReelOpen ? (
+    <div className="reel-modal" onClick={() => setShowReelOpen(false)}>
+      <div className="reel-card" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="reel-close"
+          type="button"
+          onClick={() => setShowReelOpen(false)}
+        >
+          ✕
+        </button>
+        {activeVideo?.type === "youtube" ? (
+          <iframe
+            className="reel-video"
+            src={`https://www.youtube.com/embed/${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}?autoplay=1&playsinline=1&loop=1&playlist=${activeVideo.url.split("v=")[1] ?? activeVideo.url.split("/").pop()?.split("?")[0]}`}
+            title="Video"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <video
+            className="reel-video"
+            src={activeVideo?.url}
+            controls
+            autoPlay
+            playsInline
+          />
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  if (isMobile) {
+    return (
+      <div className="mobile-page">
+        <Canvas
+          className="mobile-canvas"
+          camera={{ position: [0, 0, 10], fov: 50 }}
+          gl={{ antialias: true }}
+        >
+          <Scene progressRef={progressRef} pointerEnabled={false} />
+        </Canvas>
+        <div className="mobile-sections">{mobileSections}</div>
+        {modal}
+      </div>
+    );
+  }
+
+  return (
+    <div className="world">
+      <div
+        className="world-track background-track"
+        style={{
+          transform: `translateX(${-progress * 100}vw)`,
+          width: `${TOTAL_BACKGROUND_WIDTH}vw`,
+        }}
+      >
+        {backgroundSections}
+      </div>
+
+      <Canvas camera={{ position: [0, 0, 10], fov: 50 }} gl={{ antialias: true }}>
+        <Scene progressRef={progressRef} pointerEnabled />
+      </Canvas>
+
+      <div
+        className="world-track foreground-track"
+        style={{
+          transform: `translateX(${-progress * 100}vw)`,
+          width: `${TOTAL_FOREGROUND_WIDTH}vw`,
+        }}
+      >
+        {foregroundSections}
+      </div>
+
+      {modal}
     </div>
   );
 }
