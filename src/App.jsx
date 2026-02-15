@@ -1245,13 +1245,11 @@ export default function App() {
   const mobileSections = (
     <>
       <section className="mobile-hero">
-        <div className="mobile-hero-particles" />
         <div className="mobile-hero-text">
           <h1>KARTIK</h1>
           <h1>AJROT</h1>
           <p>CREATIVE CLOUD ENGINEER<br />BASED IN BERLIN</p>
         </div>
-        <div className="mobile-hero-footer">Work , About</div>
       </section>
 
       <section className="mobile-section mobile-devops">

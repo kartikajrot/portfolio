@@ -1006,59 +1006,27 @@ canvas {
 .mobile-hero {
   position: relative;
   min-height: 100vh;
-  background: rgba(248, 61, 12, 0.72);
+  background: rgba(248, 61, 12, 0.9);
   padding: 84px 24px 120px;
   color: #fff;
 }
 
-.mobile-hero-particles {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(0, 0, 0, 0.18) 1px, transparent 1.6px),
-    radial-gradient(circle, rgba(0, 0, 0, 0.12) 1px, transparent 1.6px);
-  background-size: 36px 36px, 56px 56px;
-  background-position: 10px 20px, 0 0;
-  opacity: 0.5;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.mobile-hero-foreground-particles {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle, rgba(0, 0, 0, 0.25) 2px, transparent 2.6px),
-    radial-gradient(circle, rgba(0, 0, 0, 0.18) 1.5px, transparent 2.2px);
-  background-size: 70px 70px, 90px 90px;
-  background-position: 10px 20px, 35px 10px;
-  animation: mobileParticlesDrift 6s ease-in-out infinite alternate;
-}
-
-@keyframes mobileParticlesDrift {
-  0% {
-    transform: translateY(-6px);
-    opacity: 0.35;
-  }
-  100% {
-    transform: translateY(8px);
-    opacity: 0.65;
-  }
+.mobile-hero-text {
+  margin-left: 28px;
+  margin-top: 38px;
 }
 
 .mobile-hero-text h1 {
-  font-size: clamp(42px, 16vw, 90px);
+  font-size: clamp(68px, 28vw, 114px);
   line-height: 0.95;
   margin: 0;
 }
 
 .mobile-hero-text p {
-  margin-top: 16px;
+  margin-top: 18px;
   letter-spacing: 1px;
-  font-size: 12px;
-  max-width: 220px;
+  font-size: 13px;
+  max-width: 240px;
 }
 
 .mobile-hero-footer {
