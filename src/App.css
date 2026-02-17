@@ -411,6 +411,22 @@ canvas {
   max-width: 720px;
 }
 
+@media (max-width: 1800px), (max-height: 1200px) {
+  .combo-screen .competencies-card {
+    top: 6vh;
+    max-width: 640px;
+    transform: scale(0.95);
+    transform-origin: top left;
+  }
+
+  .combo-screen .akelius-card {
+    bottom: 6vh;
+    max-width: 640px;
+    transform: scale(0.95);
+    transform-origin: bottom right;
+  }
+}
+
 .services-wrap {
   width: min(92vw, 1250px);
   display: flex;
@@ -722,6 +738,7 @@ canvas {
   display: grid;
   gap: 18px;
 }
+
 
 .masonry-item img {
   width: 100%;
