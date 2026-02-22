@@ -503,9 +503,16 @@ canvas {
   align-items: stretch;
 }
 
-/* Aerial section uses 3 service cards in one row */
 .aerial-screen .services-grid--two {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 520px));
+  justify-content: center;
+  width: 100%;
+}
+
+.aerial-screen .services-wrap > p {
+  width: min(100%, 1060px);
+  margin: 0 auto;
+  text-align: left;
 }
 
 .service-card {
@@ -526,12 +533,6 @@ canvas {
   display: flex;
   flex-direction: column;
   min-height: 300px;
-}
-
-@media (max-width: 1400px) {
-  .aerial-screen .services-grid--two {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 .service-card--highlight {

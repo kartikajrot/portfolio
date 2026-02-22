@@ -1209,18 +1209,6 @@ export default function App() {
                   <li>Flexible format — hourly or workshop-based</li>
                 </ul>
               </div>
-              <div className="service-card2 service-card--warm">
-                <span className="service-pill service-pill--warm">LIFE COACHING</span>
-                <h3>Personal & Professional Growth</h3>
-                <p>Approachable, practical coaching for change and clarity in work and life.</p>
-                <ul>
-                  <li>Career direction and growth planning</li>
-                  <li>Moving abroad and personal transition support</li>
-                  <li>Relationships, communication, and boundaries</li>
-                  <li>Dating guidance with confidence and intention</li>
-                  <li>Structured sessions with actionable follow-through</li>
-                </ul>
-              </div>
             </div>
             <div className="contact-buttons">
               <a
@@ -1449,11 +1437,6 @@ export default function App() {
             <span className="service-pill service-pill--warm">TRAINING</span>
             <h3>Learn to Fly & Edit</h3>
             <p>1:1 or small group training for flight, camera settings, and editing workflows.</p>
-          </div>
-          <div className="mobile-card">
-            <span className="service-pill service-pill--warm">LIFE COACHING</span>
-            <h3>Personal & Professional Growth</h3>
-            <p>Support around career growth, moving abroad, relationships, and dating confidence.</p>
           </div>
         </div>
         <div className="contact-buttons">
