@@ -799,6 +799,9 @@ function VideoThumb({ src, previewSrc, poster, className, onOpen, span = 24 }) {
       onMouseLeave={previewSrc ? handleLeave : undefined}
       style={{ backgroundImage: `url(${poster})`, gridRowEnd: `span ${span}` }}
     >
+      <span className="tile-play-icon" aria-hidden="true">
+        ▶
+      </span>
       {previewSrc && (
         <video ref={videoRef} src={previewSrc} muted loop playsInline preload="metadata" poster={poster} />
       )}
@@ -1146,16 +1149,16 @@ export default function App() {
         <section className="screen gallery-screen">
           <div className="video-layout gallery-grid">
             {[
-              { poster: "/images/11.png", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
+              { poster: "/images/3.jpg", span: 30, url: "https://youtube.com/shorts/pC4bX057qBo?feature=share" },
               { poster: "/images/2.png", span: 22, url: "https://youtube.com/shorts/uMB6769jVc4?feature=share" },
               { poster: "/images/2.jpg", span: 26, url: "https://youtu.be/ajGh1sRdnwo" },
               { poster: "/images/4.jpg", span: 34, url: "https://youtu.be/PfGdJA2TgmQ" },
               { poster: "/images/6.png", span: 20, url: "https://youtube.com/shorts/wxts8nWmAV4?feature=share" },
               { poster: "/images/7.png", span: 28, url: "https://youtube.com/shorts/AWq4gxgzEvY?feature=share" },
-              { poster: "/images/8.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
+              { poster: "/images/5.png", span: 18, url: "https://youtube.com/shorts/R87ebYV8F5M?feature=share" },
               { poster: "/images/9.png", span: 24, url: "https://youtube.com/shorts/2ku-kRGBMMQ?feature=share" },
               { poster: "/images/10.png", span: 32, url: "https://youtube.com/shorts/RM1ItFUzC_A?feature=share" },
-              { poster: "/images/3.jpg", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
+              { poster: "/images/11.png", span: 20, url: "https://youtube.com/shorts/WCqVEbqxoqw?feature=share" },
               { poster: "/images/16.png", span: 26, url: "https://youtube.com/shorts/zCNo1mjsqio?feature=share" },
               { poster: "/images/15.png", span: 30, url: "https://youtube.com/shorts/VsMo7yXKEYA?feature=share" },
             ].map((item) => (
@@ -1204,6 +1207,18 @@ export default function App() {
                   <li>Video editing & post-production workflow</li>
                   <li>Regulations & safety best practices</li>
                   <li>Flexible format — hourly or workshop-based</li>
+                </ul>
+              </div>
+              <div className="service-card2 service-card--warm">
+                <span className="service-pill service-pill--warm">LIFE COACHING</span>
+                <h3>Personal & Professional Growth</h3>
+                <p>Approachable, practical coaching for change and clarity in work and life.</p>
+                <ul>
+                  <li>Career direction and growth planning</li>
+                  <li>Moving abroad and personal transition support</li>
+                  <li>Relationships, communication, and boundaries</li>
+                  <li>Dating guidance with confidence and intention</li>
+                  <li>Structured sessions with actionable follow-through</li>
                 </ul>
               </div>
             </div>
@@ -1424,15 +1439,22 @@ export default function App() {
           <div className="mobile-title mobile-title--offset">Services</div>
         </div>
         <p className="mobile-lede">Drone cinematography · Training · Post-production</p>
-        <div className="mobile-card">
-          <span className="service-pill service-pill--warm">CINEMATOGRAPHY</span>
-          <h3>Aerial Videography</h3>
-          <p>Wedding/events, real estate, travel, landscape cinematography, and post-production.</p>
-        </div>
-        <div className="mobile-card">
-          <span className="service-pill service-pill--warm">TRAINING</span>
-          <h3>Learn to Fly & Edit</h3>
-          <p>1:1 or small group training for flight, camera settings, and editing workflows.</p>
+        <div className="mobile-services-cards">
+          <div className="mobile-card">
+            <span className="service-pill service-pill--warm">CINEMATOGRAPHY</span>
+            <h3>Aerial Videography</h3>
+            <p>Wedding/events, real estate, travel, landscape cinematography, and post-production.</p>
+          </div>
+          <div className="mobile-card">
+            <span className="service-pill service-pill--warm">TRAINING</span>
+            <h3>Learn to Fly & Edit</h3>
+            <p>1:1 or small group training for flight, camera settings, and editing workflows.</p>
+          </div>
+          <div className="mobile-card">
+            <span className="service-pill service-pill--warm">LIFE COACHING</span>
+            <h3>Personal & Professional Growth</h3>
+            <p>Support around career growth, moving abroad, relationships, and dating confidence.</p>
+          </div>
         </div>
         <div className="contact-buttons">
           <a
