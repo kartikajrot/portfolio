@@ -933,23 +933,27 @@ export default function App() {
             <div className="competency-grid">
               <div>
                 <h3>Cloud & Infrastructure</h3>
-                <p>AWS, Azure, Terraform (IaC), VPC/vWAN design, DNS, Secret Management, RBAC</p>
+                <p>AWS, Azure, GCP, STACKIT, Terraform (IaC), Cloud Formation, Ansible, VPC/vWAN Design, DNS, Secret Management, RBAC, Linux Administration, VM Provisioning, OS Hardening</p>
               </div>
               <div>
                 <h3>Containers & Platform</h3>
-                <p>Kubernetes (AKS, EKS), GitOps (FluxCD), Helm, GPU nodes, Karpenter, KEDA, AWS ParallelCluster, SLURM, HPC</p>
+                <p>Kubernetes (AKS, EKS), GitOps (FluxCD), Docker, Helm, PostgreSQL, Kafka, SQS, GPU-Enabled Nodes, Karpenter, KEDA, vCluster</p>
+              </div>
+              <div>
+                <h3>AI & HPC Infrastructure</h3>
+                <p>KubeAI, vLLM, LLM Inference Serving, KubeRay, AWS ParallelCluster, SLURM, HPC Cluster Management</p>
               </div>
               <div>
                 <h3>CI/CD & Automation</h3>
-                <p>Jenkins, GitLab CI, Azure DevOps, Self-Hosted Runners, Python, Go</p>
+                <p>Jenkins, Github Actions, GitLab CI, Azure DevOps, Self-Hosted Runners (Linux/macOS), Python, Go</p>
               </div>
               <div>
                 <h3>Observability & SRE</h3>
-                <p>Prometheus, Grafana, Datadog, ELK/EFK, Thanos, Loki</p>
+                <p>Prometheus, Grafana, Datadog, ELK/EFK, Thanos, Loki, OpenSearch</p>
               </div>
               <div>
                 <h3>Security & Identity</h3>
-                <p>Auth0, Microsoft Entra, Azure PIM, OAuth2/OIDC, Kyverno, IAM/RBAC, Vault, Snyk, SonarQube, PCI-DSS</p>
+                <p>Auth0, Microsoft Entra, Keycloak, Azure PIM, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, AppArmor, PCI-DSS, ISO 27001, SOC 2</p>
               </div>
             </div>
           </div>
@@ -1269,11 +1273,12 @@ export default function App() {
       <section className="mobile-section">
         <div className="mobile-card">
           <h2>Core Competencies</h2>
-          <p><strong>Cloud & Infrastructure:</strong> AWS, Azure, Terraform, DNS, Secrets, RBAC</p>
-          <p><strong>Containers & Platform:</strong> AKS/EKS, GitOps (FluxCD), Helm, Karpenter, KEDA, ParallelCluster</p>
-          <p><strong>CI/CD & Automation:</strong> Jenkins, GitLab CI, Azure DevOps, Python, Go</p>
-          <p><strong>Observability:</strong> Prometheus, Grafana, Datadog, ELK, Loki</p>
-          <p><strong>Security:</strong> Entra, OAuth/OIDC, Kyverno, Vault, Snyk, SonarQube</p>
+          <p><strong>Cloud & Infrastructure:</strong> AWS, Azure, GCP, STACKIT, Terraform, Cloud Formation, Ansible, VPC/vWAN, DNS, Secret Management, RBAC, Linux Admin, VM Provisioning, OS Hardening</p>
+          <p><strong>Containers & Platform:</strong> Kubernetes (AKS/EKS), GitOps (FluxCD), Docker, Helm, PostgreSQL, Kafka, SQS, GPU Nodes, Karpenter, KEDA, vCluster</p>
+          <p><strong>AI & HPC Infrastructure:</strong> KubeAI, vLLM, LLM Inference Serving, KubeRay, AWS ParallelCluster, SLURM, HPC Cluster Management</p>
+          <p><strong>CI/CD & Automation:</strong> Jenkins, Github Actions, GitLab CI, Azure DevOps, Self-Hosted Runners (Linux/macOS), Python, Go</p>
+          <p><strong>Observability & SRE:</strong> Prometheus, Grafana, Datadog, ELK/EFK, Thanos, Loki, OpenSearch</p>
+          <p><strong>Security & Identity:</strong> Auth0, Microsoft Entra, Keycloak, Azure PIM, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, AppArmor, PCI-DSS, ISO 27001, SOC 2</p>
         </div>
       </section>
 
