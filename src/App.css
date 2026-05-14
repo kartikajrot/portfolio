@@ -227,6 +227,48 @@ canvas {
   color: #fff;
 }
 
+.ai-cta {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  color: #fff;
+  font-style: normal;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 10px 18px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ai-cta:hover,
+.ai-cta:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.ai-beta-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  padding: 2px 6px;
+  vertical-align: middle;
+  margin-left: 6px;
+  line-height: 1.4;
+}
+
+.ai-left .ai-beta-badge,
+.ai-modal-card .ai-beta-badge {
+  background: rgba(17, 17, 17, 0.08);
+  border-color: rgba(17, 17, 17, 0.25);
+  color: rgba(17, 17, 17, 0.6);
+}
+
 .hero-next {
   position: absolute;
   bottom: 40px;
@@ -408,7 +450,7 @@ canvas {
   position: absolute;
   bottom: 13vh;
   right: 6vw;
-  max-width: 720px;
+  max-width: 860px;
 }
 
 @media (max-width: 1800px), (max-height: 1200px) {
@@ -421,7 +463,7 @@ canvas {
 
   .combo-screen .akelius-card {
     bottom: 6vh;
-    max-width: 640px;
+    max-width: 760px;
     transform: scale(0.95);
     transform-origin: bottom right;
   }
@@ -956,6 +998,273 @@ canvas {
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
+}
+
+.ai-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.35);
+  backdrop-filter: blur(5px);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ai-modal-card {
+  position: relative;
+  width: min(1200px, 96vw);
+  min-height: min(760px, 90vh);
+  background: #f6f2e8;
+  border: 2px solid rgba(17, 17, 17, 0.85);
+  border-radius: 24px;
+  color: #111;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 26px;
+  padding: 28px;
+}
+
+.ai-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  border: 1px solid rgba(17, 17, 17, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #111;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 10px 14px;
+}
+
+.ai-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+}
+
+.ai-left h3 {
+  margin: 4px 0 0;
+  font-size: 38px;
+  line-height: 1.05;
+}
+
+.ai-left p {
+  margin: 0;
+  color: rgba(17, 17, 17, 0.72);
+}
+
+.ai-left small {
+  margin-top: 10px;
+  color: rgba(17, 17, 17, 0.55);
+  line-height: 1.5;
+}
+
+.ai-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+}
+
+.ai-right-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.ai-right-inner--active {
+  height: 100%;
+}
+
+.ai-intro {
+  margin: 50px 0 0;
+  font-size: clamp(32px, 2.8vw, 56px);
+  line-height: 1.25;
+  color: rgba(17, 17, 17, 0.88);
+  max-width: 900px;
+}
+
+.ai-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ai-btn {
+  border: 1px solid rgba(17, 17, 17, 0.32);
+  border-radius: 999px;
+  padding: 14px 24px;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.ai-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-btn--primary {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ai-chip {
+  border: 1px solid rgba(17, 17, 17, 0.25);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: transparent;
+  color: rgba(17, 17, 17, 0.92);
+  cursor: pointer;
+}
+
+.ai-call-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.58);
+  margin-top: 2px;
+}
+
+.ai-call-state {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(17, 17, 17, 0.76);
+}
+
+.ai-transcript {
+  margin-top: 16px;
+  border: 1px solid rgba(17, 17, 17, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  min-height: 170px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overscroll-behavior: contain;
+}
+
+.ai-right-inner--active .ai-transcript {
+  min-height: 340px;
+  max-height: 420px;
+}
+
+.ai-msg {
+  max-width: 80%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  line-height: 1.35;
+  font-size: 14px;
+}
+
+.ai-msg--assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+}
+
+.ai-msg--streaming {
+  border-color: rgba(17, 17, 17, 0.35);
+  animation: ai-stream-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ai-stream-pulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
+.ai-msg--user {
+  align-self: flex-end;
+  background: #111;
+  color: #fff;
+}
+
+.ai-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ai-input {
+  flex: 1;
+  border: 1px solid rgba(17, 17, 17, 0.25);
+  border-radius: 999px;
+  background: #fff;
+  padding: 12px 16px;
+  font-size: 15px;
+  outline: none;
+}
+
+.ai-input:focus {
+  border-color: rgba(17, 17, 17, 0.5);
+}
+
+.ai-btn--send {
+  min-width: 96px;
+}
+
+.ai-call-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ai-btn--danger {
+  background: #ea4335;
+  border-color: #ea4335;
+  color: #fff;
+}
+
+.ai-error {
+  margin-top: 10px;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+@media (max-width: 980px) {
+  .ai-modal-card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px;
+    min-height: auto;
+  }
+
+  .ai-intro {
+    margin-top: 24px;
+    font-size: 24px;
+    line-height: 1.35;
+  }
+
+  .ai-actions {
+    flex-wrap: wrap;
+  }
 }
 
 .creative-block {

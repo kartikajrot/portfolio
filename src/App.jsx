@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useConversation } from "@elevenlabs/react";
 import * as THREE from "three";
 import "./App.css";
 
@@ -810,12 +811,104 @@ function VideoThumb({ src, previewSrc, poster, className, onOpen, span = 24 }) {
 }
 
 export default function App() {
+  const elevenlabsAgentId =
+    import.meta.env.VITE_ELEVENLABS_AGENT_ID ||
+    "agent_9701kmebn7e5fjz9p2fp59zjg2fc";
   const [progress, setProgress] = useState(0);
   const targetRef = useRef(0);
   const progressRef = useRef(0);
   const [showReelOpen, setShowReelOpen] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiMode, setAiMode] = useState("idle");
+  const [aiMuted, setAiMuted] = useState(false);
+  const [aiSeconds, setAiSeconds] = useState(0);
+  const [aiStatus, setAiStatus] = useState("disconnected");
+  const [aiError, setAiError] = useState("");
+  const [aiInput, setAiInput] = useState("");
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiUserSpeaking, setAiUserSpeaking] = useState(false);
+  const aiTranscriptRef = useRef(null);
+  const aiMicStreamRef = useRef(null);
+  const aiStartingRef = useRef(false);
   const [activeVideo, setActiveVideo] = useState({ type: "youtube", url: "https://youtu.be/jFGiBOBfENY" });
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 900);
+
+  const conversation = useConversation({
+    onConnect: () => {
+      setAiStatus("connected");
+      setAiError("");
+    },
+    onDisconnect: () => {
+      setAiStatus("disconnected");
+      setAiMode("idle");
+      setAiSeconds(0);
+      setAiUserSpeaking(false);
+    },
+    onStatusChange: ({ status }) => {
+      if (status) setAiStatus(status);
+    },
+    onModeChange: ({ mode }) => {
+      if (mode === "speaking") {
+        setAiUserSpeaking(false);
+        setAiMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") return prev;
+          return [...prev, { role: "assistant", text: "…", streaming: true }];
+        });
+      }
+    },
+    onMessage: ({ source, message }) => {
+      const text = String(message || "").replace(/\[[^\]]+\]\s*/g, "").trim();
+      if (!text) return;
+      const role = source === "user" ? "user" : "assistant";
+      if (role === "user") {
+        setAiUserSpeaking(false);
+        setAiMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "user" && last?.text === text) return prev;
+          return [...prev, { role: "user", text }];
+        });
+        return;
+      }
+      setAiMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && last?.streaming) {
+          const next = [...prev];
+          next[next.length - 1] = { role: "assistant", text };
+          return next;
+        }
+        if (last?.role === "assistant" && last?.text === text) return prev;
+        return [...prev, { role: "assistant", text }];
+      });
+    },
+    onDebug: (debugEvent) => {
+      if (debugEvent?.type !== "tentative_agent_response") return;
+      const text = String(debugEvent.response || "").replace(/\[[^\]]+\]\s*/g, "").trim();
+      if (!text) return;
+      setAiMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && last?.streaming) {
+          if (last.text === text) return prev;
+          const next = [...prev];
+          next[next.length - 1] = { role: "assistant", text, streaming: true };
+          return next;
+        }
+        return [...prev, { role: "assistant", text, streaming: true }];
+      });
+    },
+    onVadScore: ({ vadScore }) => {
+      setAiUserSpeaking(vadScore > 0.4);
+    },
+    onError: (error) => {
+      const msg = typeof error === "string" ? error : error?.message || "AI connection error";
+      setAiError(msg);
+    },
+  });
+
+  useEffect(() => {
+    if (aiStatus !== "connected") return;
+    conversation.setMicMuted?.(aiMuted);
+  }, [aiMuted, aiStatus, conversation]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -834,6 +927,58 @@ export default function App() {
     html.classList.toggle("is-mobile", isMobile);
     body.classList.toggle("is-mobile", isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    if (aiMode !== "call") return;
+    const timer = setInterval(() => setAiSeconds((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, [aiMode]);
+
+  useEffect(() => {
+    if (showAiModal) return;
+    if (aiStatus === "connected" || aiStatus === "connecting") {
+      conversation.endSession();
+    }
+    setAiMode("idle");
+    setAiSeconds(0);
+    setAiMuted(false);
+  }, [showAiModal, aiStatus, conversation]);
+
+  useEffect(() => {
+    if (!showAiModal) return;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    // Pre-warm microphone permission to reduce first-response lag on "Start the Call".
+    if (!aiMicStreamRef.current) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          aiMicStreamRef.current = stream;
+        })
+        .catch(() => {
+          // Ignore here; we surface explicit errors on call start.
+        });
+    }
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+
+      if (aiMicStreamRef.current) {
+        aiMicStreamRef.current.getTracks().forEach((t) => t.stop());
+        aiMicStreamRef.current = null;
+      }
+    };
+  }, [showAiModal]);
+
+  useEffect(() => {
+    if (!aiTranscriptRef.current) return;
+    aiTranscriptRef.current.scrollTop = aiTranscriptRef.current.scrollHeight;
+  }, [aiMessages, aiMode]);
+
 
   useEffect(() => {
     const onMove = (e) => {
@@ -863,6 +1008,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (showAiModal) return;
     if (isMobile) {
       const onScroll = () => {
         const virtualProgress = window.scrollY / window.innerHeight;
@@ -882,7 +1028,7 @@ export default function App() {
 
     window.addEventListener("wheel", onWheel, { passive: false });
     return () => window.removeEventListener("wheel", onWheel);
-  }, [isMobile]);
+  }, [isMobile, showAiModal]);
 
   const tightForegroundCount = TIGHT_FOREGROUND_COUNT;
   const tightBackgroundCount = TIGHT_BACKGROUND_COUNT;
@@ -901,10 +1047,16 @@ export default function App() {
           </div>
 
           <div className="hero-footer">
-            <span>Work , About</span>
+            <button
+              className="ai-cta clickable"
+              type="button"
+              onClick={() => setShowAiModal(true)}
+            >
+              Talk to my AI <span className="ai-beta-badge">Beta</span>
+            </button>
           </div>
 
-          
+
       </section>
 
       <section className="screen devops-screen">
@@ -917,8 +1069,8 @@ export default function App() {
             </div>
           </div>
           <div className="devops-main">
-            <WiggleTitle textLines={["Senior DevOps"]} emphasis />
-            <WiggleTitle textLines={[ "Engineer"]} emphasis />
+            <WiggleTitle textLines={["DevOps"]} emphasis />
+            <WiggleTitle textLines={["Engineer"]} emphasis />
             <div className="devops-tagline">
               8+ years architecting cloud platforms, infrastructure strategy, and reliability.
               Expert in Kubernetes at scale, GitOps automation, and security-first architecture.
@@ -933,15 +1085,11 @@ export default function App() {
             <div className="competency-grid">
               <div>
                 <h3>Cloud & Infrastructure</h3>
-                <p>AWS, Azure, GCP, STACKIT, Terraform (IaC), Cloud Formation, Ansible, VPC/vWAN Design, DNS, Secret Management, RBAC, Linux Administration, VM Provisioning, OS Hardening</p>
+                <p>Kubernetes (AKS, EKS), Terraform, AWS, Azure, GCP, Hybrid Cloud, VPC/vWAN Design, DNS, Secret Management, RBAC, Bare-metal Operations, Linux Administration</p>
               </div>
               <div>
                 <h3>Containers & Platform</h3>
-                <p>Kubernetes (AKS, EKS), GitOps (FluxCD), Docker, Helm, PostgreSQL, Kafka, SQS, GPU-Enabled Nodes, Karpenter, KEDA, vCluster</p>
-              </div>
-              <div>
-                <h3>AI & HPC Infrastructure</h3>
-                <p>KubeAI, vLLM, LLM Inference Serving, KubeRay, AWS ParallelCluster, SLURM, HPC Cluster Management</p>
+                <p>GitOps (FluxCD, ArgoCD), Docker, Helm, Karpenter, Kyverno, KEDA, Knative, Istio, Kamaji, vCluster, CRD Development</p>
               </div>
               <div>
                 <h3>CI/CD & Automation</h3>
@@ -949,41 +1097,44 @@ export default function App() {
               </div>
               <div>
                 <h3>Observability & SRE</h3>
-                <p>Prometheus, Grafana, Datadog, ELK/EFK, Thanos, Loki, OpenSearch</p>
+                <p>Prometheus, Grafana, Datadog, ELK/EFK, Elasticsearch, Loki, Thanos, OpenSearch, SLI/SLO Definition, Burn-rate Alerting</p>
               </div>
               <div>
                 <h3>Security & Identity</h3>
-                <p>Auth0, Microsoft Entra, Keycloak, Azure PIM, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, AppArmor, PCI-DSS, ISO 27001, SOC 2</p>
+                <p>Keycloak, Auth0, Microsoft Entra, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, PCI-DSS, ISO 27001, SOC 2</p>
               </div>
             </div>
           </div>
 
           <div className="screen-card elastic-ui dense-card akelius-card">
             <h2>Akelius</h2>
-            <p>Senior DevOps Engineer</p>
+            <p>DevOps Specialist</p>
             <p className="date-line">October 2021 - Present · Berlin, Germany</p>
             <div className="dense-block">
-              <h3>Strategic Platform & Infrastructure Leadership</h3>
+              <h3>Platform Vision & Architecture</h3>
               <ul>
-                <li>Managed Kubernetes platform infrastructure across production clusters (AKS/EKS) including upgrades and tooling, supporting 60+ engineers; sustained 99.9% uptime for 100K+ users across 4 countries.</li>
-                <li>Consolidated cloud footprint (AWS vs Azure), executing migration that reduced annual infrastructure costs by 39% with zero business disruption.</li>
-                <li>Built multi-cloud foundations with Terraform: VPCs/VPNs/routing, IAM governance, and security baselines standardized across AWS and Azure.</li>
+                <li>Defined and owned Kubernetes platform strategy across 22 AKS/EKS clusters: lifecycle, upgrades, node pools, ingress, Kong, CoreDNS, Fluent Bit, cert-manager, Kyverno, and KEDA; enabled 40+ engineers and reduced onboarding from 2 weeks to 2 days.</li>
+                <li>Led AWS → Azure consolidation across 62 applications with zero downtime, reducing annual cloud spend by 39% (€271k) after securing C-level buy-in.</li>
+                <li>Designed multi-cloud Terraform foundations for networking, IAM governance, and security patterns adopted across AWS and Azure.</li>
+                <li>Standardized self-service GitOps using FluxCD and Kustomize base/overlay patterns, reducing release lead time by 60%.</li>
+                <li>Led Auth0 → Keycloak migration end-to-end (PoC to rollout), reshaping identity architecture and zero-trust adoption.</li>
+                <li>Defined AI infra roadmap: deployed KubeAI + vLLM endpoints (Llama/Mistral) for 800 users, supporting analytics across 20K+ residential units.</li>
               </ul>
             </div>
             <div className="dense-block">
               <h3>Observability & Platform Engineering Excellence</h3>
               <ul>
-                <li>Established observability model with Prometheus, Grafana, Datadog, and ELK; defined SLIs/SLOs/SLAs and reduced MTTR by 45% via standardized incident response.</li>
-                <li>Led GitOps adoption (FluxCD ) across clusters, delivering 60% faster releases and self-service deployments for 60+ engineers.</li>
-                <li>Standardized CI/CD into a centralized Jenkins platform with self-hosted runners and Mac nodes; integrated Snyk and SonarQube for safer deployments across 8+ teams.</li>
+                <li>Architected observability stack from scratch (Prometheus, Grafana, Datadog, ELK, DCGM exporter), defined SLIs/SLOs, and added burn-rate alerting; reduced alert noise by 70% and MTTR by 45%.</li>
+                <li>Led org-wide GitOps adoption after FluxCD vs ArgoCD evaluation; made GitOps default across 22 clusters.</li>
+                <li>Consolidated CI/CD into centralized Jenkins with self-hosted Linux/macOS runners and integrated Snyk + SonarQube for 50+ production deployments/week.</li>
               </ul>
             </div>
             <div className="dense-block">
-              <h3>Security Governance, Innovation & Leadership</h3>
+              <h3>Team Leadership & Developer Experience</h3>
               <ul>
-                <li>Implemented Kyverno policy-as-code guardrails, reducing security incidents by 60% while speeding compliant delivery.</li>
-                <li>Led identity platform evaluation (Auth0, Microsoft Entra, Keycloak), shaping company-wide identity architecture and zero-trust adoption.</li>
-                <li>Owned on-call and incident response strategy; mentored engineers on Kubernetes ops, reliability, and cloud cost awareness to raise platform maturity.</li>
+                <li>Led platform engineers with direct line management and production pairing; grew junior engineers to mid-level with zero voluntary attrition.</li>
+                <li>Established platform standards across 9 development teams for GitOps, security, observability, and CI/CD.</li>
+                <li>Applied product mindset to platform roadmap using developer interviews and adoption-impact prioritization.</li>
               </ul>
             </div>
           </div>
@@ -996,9 +1147,9 @@ export default function App() {
               <p>Senior Software Engineer – DevOps</p>
               <p className="date-line">April 2020 – September 2021 · Bangalore, India</p>
               <ul>
-                <li>Supported migration of large-scale Java systems to cloud-native platforms (OpenShift), improving scalability and operational resilience.</li>
-                <li>Designed and operated a managed Apache platform using the Kubernetes Operator pattern (Golang), reducing manual operational effort.</li>
-                <li>Participated in on-call rotations for high-traffic production systems.</li>
+                <li>Led migration of large-scale Java systems to cloud-native OpenShift, defining strategy and cutover for 15+ high-traffic services and improving scalability by 3x.</li>
+                <li>Designed and operated a Managed Apache platform with Kubernetes Operators (Golang), automating deployment/scaling for 200+ instances across 5 regions and reducing manual effort by 80%.</li>
+                <li>Served as Scrum Master for 3 cross-functional teams, improving delivery predictability by 40% and reducing cycle time.</li>
               </ul>
             </div>
             <div className="screen-card elastic-ui stacked-overlap">
@@ -1007,7 +1158,8 @@ export default function App() {
               <p className="date-line">January 2018 – March 2020 · Bangalore, India</p>
               <ul>
                 <li>Developed backend services and automation frameworks in Python and Java for distributed systems.</li>
-                <li>Upgraded Apache and JBOSS servers to meet PCI-DSS compliance standards.</li>
+                <li>Upgraded Apache/JBoss servers across production fleet to meet PCI-DSS compliance requirements.</li>
+                <li>Participated in on-call rotations for high-traffic systems handling 10M+ daily transactions with 99.99% uptime.</li>
               </ul>
             </div>
           </div>
@@ -1256,12 +1408,21 @@ export default function App() {
           <h1>KARTIK</h1>
           <h1>AJROT</h1>
           <p>CREATIVE CLOUD ENGINEER<br />BASED IN BERLIN</p>
+          <div className="mobile-hero-footer">
+            <button
+              className="ai-cta clickable"
+              type="button"
+              onClick={() => setShowAiModal(true)}
+            >
+              Talk to my AI <span className="ai-beta-badge">Beta</span>
+            </button>
+          </div>
         </div>
       </section>
 
       <section className="mobile-section mobile-devops">
         <div className="mobile-title-stack mobile-title-stack--aligned">
-          <div className="mobile-title">Senior DevOps</div>
+          <div className="mobile-title">DevOps</div>
           <div className="mobile-title mobile-title--offset">Engineer</div>
         </div>
         <p className="mobile-lede">
@@ -1273,24 +1434,23 @@ export default function App() {
       <section className="mobile-section">
         <div className="mobile-card">
           <h2>Core Competencies</h2>
-          <p><strong>Cloud & Infrastructure:</strong> AWS, Azure, GCP, STACKIT, Terraform, Cloud Formation, Ansible, VPC/vWAN, DNS, Secret Management, RBAC, Linux Admin, VM Provisioning, OS Hardening</p>
-          <p><strong>Containers & Platform:</strong> Kubernetes (AKS/EKS), GitOps (FluxCD), Docker, Helm, PostgreSQL, Kafka, SQS, GPU Nodes, Karpenter, KEDA, vCluster</p>
-          <p><strong>AI & HPC Infrastructure:</strong> KubeAI, vLLM, LLM Inference Serving, KubeRay, AWS ParallelCluster, SLURM, HPC Cluster Management</p>
+          <p><strong>Cloud & Infrastructure:</strong> Kubernetes (AKS, EKS), Terraform, AWS, Azure, GCP, Hybrid Cloud, VPC/vWAN, DNS, Secret Management, RBAC, Bare-metal Operations, Linux Administration</p>
+          <p><strong>Containers & Platform:</strong> GitOps (FluxCD, ArgoCD), Docker, Helm, Karpenter, Kyverno, KEDA, Knative, Istio, Kamaji, vCluster, CRD Development</p>
           <p><strong>CI/CD & Automation:</strong> Jenkins, Github Actions, GitLab CI, Azure DevOps, Self-Hosted Runners (Linux/macOS), Python, Go</p>
-          <p><strong>Observability & SRE:</strong> Prometheus, Grafana, Datadog, ELK/EFK, Thanos, Loki, OpenSearch</p>
-          <p><strong>Security & Identity:</strong> Auth0, Microsoft Entra, Keycloak, Azure PIM, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, AppArmor, PCI-DSS, ISO 27001, SOC 2</p>
+          <p><strong>Observability & SRE:</strong> Prometheus, Grafana, Datadog, ELK/EFK, Elasticsearch, Loki, Thanos, OpenSearch, SLI/SLO Definition, Burn-rate Alerting</p>
+          <p><strong>Security & Identity:</strong> Keycloak, Auth0, Microsoft Entra, OAuth2/OIDC, Kyverno Policy-as-Code, IAM/RBAC, Snyk, SonarQube, Falco, PCI-DSS, ISO 27001, SOC 2</p>
         </div>
       </section>
 
       <section className="mobile-section">
         <div className="mobile-card">
-          <h2>Akelius · Senior DevOps Engineer</h2>
+          <h2>Akelius · DevOps Specialist</h2>
           <p className="date-line">Oct 2021 – Present · Berlin</p>
           <ul>
-            <li>Managed Kubernetes platforms across 22 AKS/EKS clusters for 40+ engineers.</li>
-            <li>Cut onboarding from 2 weeks to 2 days while sustaining 99.9% uptime.</li>
-            <li>Built infra with Terraform, multi-cloud networking, IAM, and security guardrails.</li>
-            <li>Led observability with Prometheus/Grafana/Datadog; reduced MTTR by 45%.</li>
+            <li>Owned Kubernetes platform strategy across 22 AKS/EKS clusters and internal tooling stack.</li>
+            <li>Cut app onboarding from 2 weeks to 2 days while supporting 100K+ users.</li>
+            <li>Led AWS → Azure migration across 62 apps with zero downtime and 39% cost reduction.</li>
+            <li>Built Terraform multi-cloud foundations and standardized GitOps workflows.</li>
           </ul>
         </div>
       </section>
@@ -1462,7 +1622,7 @@ export default function App() {
     </>
   );
 
-  const modal = showReelOpen ? (
+  const reelModal = showReelOpen ? (
     <div className="reel-modal" onClick={() => setShowReelOpen(false)}>
       <div className="reel-card" onClick={(e) => e.stopPropagation()}>
         <button
@@ -1493,6 +1653,228 @@ export default function App() {
     </div>
   ) : null;
 
+  const formatTime = (seconds) => {
+    const mm = `${Math.floor(seconds / 60)}`.padStart(2, "0");
+    const ss = `${seconds % 60}`.padStart(2, "0");
+    return `${mm}:${ss}`;
+  };
+
+  const getFriendlyAiError = (errorText) => {
+    const text = String(errorText || "").toLowerCase();
+    if (
+      text.includes("daily call limit") ||
+      text.includes("exceeded") ||
+      text.includes("limit reached") ||
+      text.includes("quota")
+    ) {
+      return "AI is kaputt for now — I hit today’s voice limit. Please try again a little later.";
+    }
+    if (text.includes("microphone permission denied")) {
+      return "Microphone access is blocked. Please allow microphone access in your browser settings and try again.";
+    }
+    if (text.includes("websocket") || text.includes("peer connection")) {
+      return "AI call line dropped — please retry in a few seconds.";
+    }
+    if (text.includes("unable to connect voice session")) {
+      return "AI is taking a quick coffee break. Voice is unavailable right now, please retry shortly.";
+    }
+    return errorText;
+  };
+
+  const handleAiChip = async (text) => {
+    setAiInput(text);
+    await sendAiMessage(text);
+    setAiInput("");
+  };
+
+  const sendAiMessage = async (overrideText) => {
+    const q = (overrideText ?? aiInput).trim();
+    if (!q) return;
+    setAiMessages((prev) => [
+      ...prev,
+      { role: "user", text: q },
+      { role: "assistant", text: "…", streaming: true },
+    ]);
+    if (!overrideText) setAiInput("");
+    try {
+      conversation.sendUserMessage(q);
+    } catch (error) {
+      setAiError(error?.message || "Failed to send message.");
+    }
+  };
+
+  const startAiCall = async () => {
+    if (aiStartingRef.current || aiStatus === "connecting" || aiStatus === "connected") {
+      return;
+    }
+    if (!elevenlabsAgentId) {
+      setAiError("Missing ElevenLabs agent id.");
+      return;
+    }
+    aiStartingRef.current = true;
+    setAiError("");
+    setAiStatus("connecting");
+    setAiSeconds(0);
+    setAiMuted(false);
+    setAiMessages([]);
+    try {
+      if (!aiMicStreamRef.current) {
+        aiMicStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+      await conversation.startSession({
+        agentId: elevenlabsAgentId,
+      });
+      setAiMode("call");
+    } catch (error) {
+      setAiMode("idle");
+      const rawMessage = error?.message || "Unable to connect voice session.";
+      if (/notallowederror|permission denied|permission dismissed/i.test(rawMessage)) {
+        setAiError("Microphone permission denied. Please allow mic access and retry.");
+      } else {
+        setAiError(rawMessage);
+      }
+    } finally {
+      aiStartingRef.current = false;
+    }
+  };
+
+  const endAiCall = async () => {
+    try {
+      await conversation.endSession();
+    } catch (_) {}
+    setAiMode("idle");
+    setAiSeconds(0);
+    setAiMuted(false);
+    setAiMessages([]);
+  };
+
+  const aiModal = showAiModal ? (
+    <div className="ai-modal" onClick={() => setShowAiModal(false)}>
+      <div className="ai-modal-card" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="ai-close"
+          type="button"
+          onClick={() => setShowAiModal(false)}
+        >
+          Close
+        </button>
+        <div className="ai-left">
+          <img
+            className="ai-avatar"
+            src="/images/ai-profile.png"
+            alt="Kartik Ajrot"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/images/111.png";
+            }}
+          />
+          <h3>Kartik Ajrot <span className="ai-beta-badge">Beta</span></h3>
+          <p>Trust me I sound like my AI</p>
+          <small>Beta — limited minutes available. Powered by AI. Responses may be imperfect.</small>
+        </div>
+        <div className="ai-right">
+          <div className={`ai-right-inner ${aiMode !== "idle" ? "ai-right-inner--active" : ""}`}>
+            <div className="ai-call-top">
+              <span>{aiMode === "call" ? formatTime(aiSeconds) : "00:00"}</span>
+              {aiMode !== "idle" ? <span>{aiStatus}</span> : null}
+              <span>5:00 max</span>
+            </div>
+            {aiMode === "call" && (
+              <div className="ai-call-state">
+                <span>{conversation.isSpeaking ? "AI speaking…" : aiUserSpeaking ? "Hearing you…" : "Listening…"}</span>
+              </div>
+            )}
+            {aiMode === "idle" ? (
+              <>
+                <p className="ai-intro">
+                  Hey! I am Kartik. You are on my portfolio right now. Ask about my work,
+                  DevOps projects, cloud platform services, creative work, or just chat.
+                </p>
+                <div className="ai-actions">
+                  <button
+                    className="ai-btn ai-btn--primary"
+                    type="button"
+                    onClick={() => void startAiCall()}
+                  >
+                    Start the Call
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="ai-suggestions">
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => void handleAiChip("Explain Akelius work")}
+                  >
+                    Explain Akelius work
+                  </button>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => void handleAiChip("What are you working on?")}
+                  >
+                    What are you working on?
+                  </button>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => void handleAiChip("Cloud stack overview")}
+                  >
+                    Cloud stack overview
+                  </button>
+                </div>
+                <div className="ai-transcript" ref={aiTranscriptRef}>
+                  {aiMessages.map((m, i) => (
+                    <div key={`${m.role}-${i}`} className={`ai-msg ai-msg--${m.role}${m.streaming ? " ai-msg--streaming" : ""}`}>
+                      {m.text}
+                    </div>
+                  ))}
+                </div>
+                <div className="ai-input-row">
+                  <input
+                    className="ai-input"
+                    value={aiInput}
+                    onChange={(e) => setAiInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void sendAiMessage();
+                    }}
+                    placeholder="Ask me anything about my work..."
+                  />
+                  <button
+                    className="ai-btn ai-btn--send"
+                    type="button"
+                    onClick={() => void sendAiMessage()}
+                  >
+                    Send
+                  </button>
+                </div>
+                <div className="ai-call-controls">
+                  {aiMode === "call" ? (
+                    <button
+                      className="ai-btn"
+                      type="button"
+                      onClick={() => {
+                        setAiMuted((v) => !v);
+                      }}
+                    >
+                      {aiMuted ? "Unmute" : "Mute"}
+                    </button>
+                  ) : null}
+                  <button className="ai-btn ai-btn--danger" type="button" onClick={() => void endAiCall()}>
+                    End Call
+                  </button>
+                </div>
+              </>
+            )}
+            {aiError && <div className="ai-error">{getFriendlyAiError(aiError)}</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   if (isMobile) {
     return (
       <div className="mobile-page">
@@ -1504,7 +1886,8 @@ export default function App() {
           <Scene progressRef={progressRef} pointerEnabled={false} />
         </Canvas>
         <div className="mobile-sections">{mobileSections}</div>
-        {modal}
+        {reelModal}
+        {aiModal}
       </div>
     );
   }
@@ -1535,7 +1918,8 @@ export default function App() {
         {foregroundSections}
       </div>
 
-      {modal}
+      {reelModal}
+      {aiModal}
     </div>
   );
 }
