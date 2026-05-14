@@ -1761,12 +1761,8 @@ export default function App() {
         <div className="ai-left">
           <img
             className="ai-avatar"
-            src="/images/ai-profile.png"
+            src="/images/2.jpg"
             alt="Kartik Ajrot"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/images/111.png";
-            }}
           />
           <h3>Kartik Ajrot <span className="ai-beta-badge">Beta</span></h3>
           <p>Trust me I sound like my AI</p>
